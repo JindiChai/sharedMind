@@ -1,3 +1,27 @@
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyD6Q2qGofO70g_ycpkaui9TRJF79NNC3-g",
+  authDomain: "shardminds-7c935.firebaseapp.com",
+  databaseURL: "https://shardminds-7c935-default-rtdb.firebaseio.com",
+  projectId: "shardminds-7c935",
+  storageBucket: "shardminds-7c935.appspot.com",
+  messagingSenderId: "950313031631",
+  appId: "1:950313031631:web:df51efcfc1b1dccb77e4ba",
+  measurementId: "G-V6KDHDVE1F"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
+
+
 import * as THREE from "https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.1/three.module.min.js";
 import { OrbitControls } from "https://unpkg.com/three@0.126.1/examples/jsm/controls/OrbitControls.js";
 import { DragControls } from "https://unpkg.com/three@0.126.1/examples/jsm/controls/DragControls.js";
