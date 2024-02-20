@@ -1,29 +1,5 @@
-// Import the functions you need from the SDKs you need
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
-
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-  apiKey: "AIzaSyD6Q2qGofO70g_ycpkaui9TRJF79NNC3-g",
-  authDomain: "shardminds-7c935.firebaseapp.com",
-  databaseURL: "https://shardminds-7c935-default-rtdb.firebaseio.com",
-  projectId: "shardminds-7c935",
-  storageBucket: "shardminds-7c935.appspot.com",
-  messagingSenderId: "950313031631",
-  appId: "1:950313031631:web:df51efcfc1b1dccb77e4ba",
-  measurementId: "G-V6KDHDVE1F"
-};
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
-
-import { getDatabase, ref, push, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-
-
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
+import { getDatabase, ref, onValue, update, set, push, onChildAdded, onChildChanged, onChildRemoved } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-database.js";
 
 import * as THREE from "https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.1/three.module.min.js";
 import { OrbitControls } from "https://unpkg.com/three@0.126.1/examples/jsm/controls/OrbitControls.js";
@@ -32,8 +8,30 @@ let camera, scene, renderer, cube;
 let dragControls;
 let orbitControls;
 let draggableObjects = [];
+let alltextt = [];
+let db;
+let textPositionsRef= "textPositions";
 initHTML();
 init3D();
+initFirebase();
+recall();
+
+function save() {
+  let forFirebase = { objects: alltextt };
+  setDataInFirebase(textPositionsRef, forFirebase);
+}
+
+function recall() {
+  scene.remove();
+  getStuffFromFirebase(textPositionsRef, (data) => {
+      if (data) {
+          console.log("got data", data);
+          for (let i = 0; i < data.objects.length; i++) {
+            createNewText(data.objects[i].text, data.objects[i].position);
+          }
+      }
+  });
+}
 
 function init3D() {
   scene = new THREE.Scene();
@@ -62,20 +60,6 @@ function init3D() {
   animate();
 }
 
-function loadAndCreateTexts() {
-  const db = getDatabase(app); 
-  const textPositionsRef = ref(db, 'textPositions');
-  onValue(textPositionsRef, (snapshot) => {
-    snapshot.forEach((childSnapshot) => {
-      const textData = childSnapshot.val();
-      createNewText(textData.text, new THREE.Vector3(textData.position.x, textData.position.y, textData.position.z));
-    });
-  });
-}
-
-
-loadAndCreateTexts();
-
 
 function animate() {
   orbitControls.update();
@@ -86,6 +70,7 @@ function animate() {
   requestAnimationFrame(animate);
 }
 
+
 function initHTML() {
   window.addEventListener("keydown", function (e) {
     if (e.key === "Enter") {
@@ -95,6 +80,11 @@ function initHTML() {
       };
       const pos = find3DCoornatesInFrontOfCamera(100, mouse);
       createNewText(whatToSay(), pos);
+
+
+      save();
+
+
     }
   });
 }
@@ -132,24 +122,16 @@ function createNewText(text_msg, posInWorld) {
   mesh.position.x = posInWorld.x;
   mesh.position.y = posInWorld.y;
   mesh.position.z = posInWorld.z;
-
+  
+  let textt = {text: text_msg, position: posInWorld};
   console.log(posInWorld);
   mesh.lookAt(0, 0, 0);
   mesh.scale.set(10, 10, 10);
   scene.add(mesh);
   mesh.lookAt(0, 0, 0);
   draggableObjects.push(mesh);
+  alltextt.push(textt);
 
-  // Store the position in Firebase
-  var newPositionRef = firebase.database().ref('textPositions').push();
-  newPositionRef.set({
-    text: text_msg,
-    position: {
-      x: posInWorld.x,
-      y: posInWorld.y,
-      z: posInWorld.z
-    }
-  });
 }
 
 
@@ -162,4 +144,43 @@ function whatToSay() {
   ];
   const randomIndex = Math.floor(Math.random() * strings.length);
   return strings[randomIndex];
+}
+
+
+
+
+
+function initFirebase() {
+  const firebaseConfig = {
+    apiKey: "AIzaSyBNIpGK2Wc8Ps8iQ2ca7WgxOMnDgkLJgp0",
+    authDomain: "sharedminds-61cfe.firebaseapp.com",
+    databaseURL: "https://sharedminds-61cfe-default-rtdb.firebaseio.com",
+    projectId: "sharedminds-61cfe",
+    storageBucket: "sharedminds-61cfe.appspot.com",
+    messagingSenderId: "54734878071",
+    appId: "1:54734878071:web:636ec290398ebd70c2dd72",
+    measurementId: "G-RV12ZWPEKL"
+  };
+  const app = initializeApp(firebaseConfig);
+  //make a folder in your firebase for this example
+  db = getDatabase();
+}
+
+
+
+function setDataInFirebase(folder, data) {
+  //if it doesn't exist, it adds (pushes) with you providing the key
+  //if it does exist, it overwrites
+  const dbRef = ref(db, folder + '/')
+  set(dbRef, data);
+}
+
+function getStuffFromFirebase(folder, callback) {
+  //make a one time ask, not a subscription
+  const dbRef = ref(db, folder + '/');
+  onValue(dbRef, (snapshot) => {
+      console.log("here is a snapshot of everyting", snapshot.val());
+      callback(snapshot.val());
+
+  });
 }
