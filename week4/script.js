@@ -21,6 +21,9 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
 
+import { getDatabase, ref, push, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+
 
 import * as THREE from "https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.1/three.module.min.js";
 import { OrbitControls } from "https://unpkg.com/three@0.126.1/examples/jsm/controls/OrbitControls.js";
@@ -60,14 +63,16 @@ function init3D() {
 }
 
 function loadAndCreateTexts() {
-  var textPositionsRef = firebase.database().ref('textPositions');
-  textPositionsRef.on('value', function(snapshot) {
-    snapshot.forEach(function(childSnapshot) {
-      var textData = childSnapshot.val();
+  const db = getDatabase(app); 
+  const textPositionsRef = ref(db, 'textPositions');
+  onValue(textPositionsRef, (snapshot) => {
+    snapshot.forEach((childSnapshot) => {
+      const textData = childSnapshot.val();
       createNewText(textData.text, new THREE.Vector3(textData.position.x, textData.position.y, textData.position.z));
     });
   });
 }
+
 
 loadAndCreateTexts();
 
