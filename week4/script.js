@@ -140,9 +140,11 @@ function createNewText(text_msg, posInWorld) {
   mesh.lookAt(0, 0, 0);
   draggableObjects.push(mesh);
 
-  // Store the position in Firebase
-  var newPositionRef = firebase.database().ref('textPositions').push();
-  newPositionRef.set({
+  
+  const db = getDatabase(app); 
+  const textPositionsRef = ref(db, 'textPositions');
+  const newPositionRef = push(textPositionsRef);
+  set(newPositionRef, {
     text: text_msg,
     position: {
       x: posInWorld.x,
