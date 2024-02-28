@@ -275,6 +275,7 @@ document.body.appendChild(authDiv);
 
 function showLogOutButton(user) {
     authDiv.innerHTML = "";
+    document.body.backgroundColor = "#f2e1fd";
     let userNameDiv = document.createElement("div");
     if (user.photoURL) {
         let userPic = document.createElement("img");
